@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marcador Hiro · XimosAI</title>
+  <style>
+    body {
+      margin: 0;
+      background: #f2f2f2;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+      text-align: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 720px;
+      margin: auto;
+      background: white;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+    img {
+      width: min(90vw, 420px);
+      height: auto;
+      border: 1px solid #ddd;
+      margin: 16px auto;
+      display: block;
+    }
+    .nota {
+      font-size: 15px;
+      line-height: 1.45;
+      color: #333;
+    }
+    @media print {
+      body { background: white; }
+      .card { box-shadow: none; }
+      .nota { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Marcador Hiro</h1>
+    <p class="nota">
+      Imprime esta imagen o muéstrala en otra pantalla. Tiene que verse entera,
+      con el borde negro completo, buena luz y sin reflejos.
+    </p>
+
+    <img
+      src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png"
+      alt="Marcador Hiro para AR.js"
+    />
+
+    <p class="nota">
+      Abre la web AR en el móvil, acepta la cámara y apunta a este marcador.
+    </p>
+  </div>
+</body>
+</html>
