@@ -2,25 +2,37 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>XimosAI · Robot AR</title>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
   <style>
+    :root {
+      --cyan: #18e7ff;
+      --blue: #25a8ff;
+      --violet: #9f4dff;
+      --green: #21d68a;
+      --panel: rgba(7, 11, 20, 0.74);
+      --border: rgba(56, 236, 255, 0.9);
+      --shadow: rgba(0, 235, 255, 0.24);
+      --text: #f5fbff;
+      --muted: #d6f9ff;
+    }
     html, body {
       margin: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      font-family: Arial, Helvetica, sans-serif;
       background: transparent !important;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
     }
     body { position: fixed; inset: 0; }
     video {
       position: fixed !important;
       inset: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
+      width: 100vw !important;
+      height: 100vh !important;
       object-fit: cover !important;
       z-index: -2 !important;
       background: #000 !important;
@@ -28,200 +40,308 @@
     canvas {
       position: fixed !important;
       inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
       z-index: -1 !important;
     }
     a-scene {
       position: fixed !important;
       inset: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
+      width: 100vw !important;
+      height: 100vh !important;
       background: transparent !important;
     }
-    #panel {
+    #hud {
       position: fixed;
-      top: 12px;
+      top: max(12px, env(safe-area-inset-top));
       left: 12px;
       right: 12px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.58);
-      color: #fff;
-      padding: 12px;
-      border-radius: 18px;
-      border: 1px solid rgba(0, 255, 255, 0.45);
-      box-shadow: 0 0 24px rgba(0, 255, 255, 0.22);
-      backdrop-filter: blur(5px);
-      font-size: 14px;
-      line-height: 1.35;
+      z-index: 20;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 0 26px var(--shadow);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 16px 18px 14px;
     }
-    #panel strong {
-      display: block;
+    .title {
       font-size: 18px;
-      color: #00f0ff;
-      margin-bottom: 6px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: 0.2px;
     }
-    .botones {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      margin-bottom: 8px;
-    }
-    button, a.boton {
-      border: none;
-      border-radius: 12px;
-      padding: 10px 14px;
-      background: #00ddff;
-      color: #001014;
+    .title .brand1 { color: var(--cyan); }
+    .title .dot { color: #8a7cff; }
+    .title .brand2 { color: #bc66ff; }
+    .steps {
       font-size: 14px;
-      font-weight: 700;
-      text-decoration: none;
-      cursor: pointer;
+      line-height: 1.48;
+      color: var(--text);
+      margin-bottom: 12px;
     }
-    a.boton.secundario {
-      background: rgba(255,255,255,0.92);
-      color: #001014;
+    .steps b { color: #fff; }
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
     }
-    #status {
-      color: #ccfbff;
-      font-size: 13px;
-    }
-    #ayuda {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      background: rgba(0,0,0,0.45);
-      color: white;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
       padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      border: 1px solid rgba(255,255,255,0.12);
-      backdrop-filter: blur(4px);
+      border-radius: 16px;
+      border: none;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-audio {
+      background: linear-gradient(135deg, #00d8ff 0%, #19b7ff 100%);
+      color: #04131a;
+    }
+    .btn-repeat {
+      background: linear-gradient(135deg, #7b48ff 0%, #c057ff 100%);
+    }
+    .btn-marker {
+      background: linear-gradient(135deg, #14c97a 0%, #26dd9e 100%);
+      color: #04131a;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #12db7e;
+      box-shadow: 0 0 14px rgba(18,219,126,0.85);
+      flex: 0 0 14px;
+    }
+    #statusText b { color: var(--cyan); }
+    #bubble {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      z-index: 20;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: rgba(5, 9, 18, 0.84);
+      border: 1px solid rgba(66, 191, 255, 0.8);
+      border-radius: 22px;
+      box-shadow: 0 0 22px rgba(80, 132, 255, 0.22);
+      padding: 14px 16px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .voiceIcon {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 30% 30%, #3d79ff, #3d2ed9);
+      color: #fff;
+      font-size: 26px;
+      box-shadow: 0 0 16px rgba(97, 115, 255, 0.35);
+      flex: 0 0 54px;
+    }
+    #speechText {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.38;
+      color: #f7fbff;
+    }
+    #speechText .accent1 { color: var(--cyan); font-weight: 700; }
+    #speechText .accent2 { color: #c85bff; font-weight: 700; }
+    @media (max-width: 760px) {
+      .buttons { grid-template-columns: 1fr 1fr; }
+      .btn-marker { grid-column: 1 / -1; }
+      #bubble { padding: 12px 14px; }
+      .voiceIcon { width: 48px; height: 48px; font-size: 22px; flex-basis: 48px; }
+      #speechText { font-size: 14px; }
     }
   </style>
   <script>
     let audioReady = false;
     let lastSpeakTime = 0;
-    const mensajePublicidad = `
-      Hola, soy el asistente virtual de XimosAI.
-      La inteligencia artificial ya no es cosa del futuro.
-      Puede ayudarte a crear contenido, mejorar tu trabajo,
-      organizar tu empresa y ahorrar tiempo.
-      Escanea, descubre y empieza a usar la inteligencia artificial de forma práctica.
-    `;
+    const mensajePublicidad = `Hola, soy el asistente virtual de XimosAI. La inteligencia artificial ya no es cosa del futuro. Puede ayudarte a crear contenido, mejorar tu trabajo, organizar tu empresa y ahorrar tiempo. Escanea, descubre y empieza a usar la inteligencia artificial de forma práctica.`;
+
     function setStatus(texto) {
-      const s = document.getElementById("status");
-      if (s) s.innerText = texto;
+      const el = document.getElementById('statusText');
+      if (el) el.innerHTML = texto;
     }
+
+    function pickBestVoice() {
+      const voices = window.speechSynthesis.getVoices() || [];
+      if (!voices.length) return null;
+      const preferred = [
+        'Google español', 'Google español de España', 'Microsoft Helena', 'Microsoft Laura',
+        'es-ES', 'es_ES', 'español', 'Spanish', 'Google US English'
+      ];
+      for (const pref of preferred) {
+        const found = voices.find(v => (`${v.name} ${v.lang}`).toLowerCase().includes(pref.toLowerCase()));
+        if (found) return found;
+      }
+      return voices.find(v => (v.lang || '').toLowerCase().startsWith('es')) || voices[0];
+    }
+
     function hablar(texto) {
-      if (!("speechSynthesis" in window)) {
-        setStatus("Tu navegador no soporta voz automática.");
+      if (!('speechSynthesis' in window)) {
+        setStatus('Tu navegador no soporta voz automática.');
         return;
       }
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(texto);
-      u.lang = "es-ES";
-      u.rate = 0.96;
-      u.pitch = 1.02;
+      u.lang = 'es-ES';
+      u.rate = 0.97;
+      u.pitch = 1.03;
       u.volume = 1;
+      const voice = pickBestVoice();
+      if (voice) u.voice = voice;
       window.speechSynthesis.speak(u);
     }
+
     function activarAudio() {
       audioReady = true;
-      hablar("Audio activado. Apunta la cámara al marcador para ver a XimosAI.");
-      setStatus("Audio activado. Apunta al marcador.");
+      hablar('Audio activado. Apunta la cámara al marcador para ver a XimosAI.');
+      setStatus('Audio activado. <b>Apunta al marcador</b>.');
     }
+
     function repetirMensaje() {
       audioReady = true;
       hablar(mensajePublicidad);
-      setStatus("Mensaje reproducido.");
+      setStatus('Reproduciendo mensaje de <b>XimosAI</b>.');
     }
-    AFRAME.registerComponent("ximosai-robot-ar", {
+
+    window.speechSynthesis?.addEventListener?.('voiceschanged', () => {});
+
+    AFRAME.registerComponent('ximosai-robot-ar', {
       init: function () {
         const marker = this.el;
-        marker.addEventListener("markerFound", function () {
+        marker.addEventListener('markerFound', function () {
           const ahora = Date.now();
           if (audioReady && ahora - lastSpeakTime > 18000) {
             lastSpeakTime = ahora;
             hablar(mensajePublicidad);
-            setStatus("Marcador detectado. Robot XimosAI hablando.");
+            setStatus('Marcador detectado. Robot <b>XimosAI</b> hablando.');
           } else if (!audioReady) {
-            setStatus("Marcador detectado. Pulsa Activar audio para que hable.");
+            setStatus('Marcador detectado. Pulsa <b>Activar audio</b> para que hable.');
           } else {
-            setStatus("Marcador detectado. Robot XimosAI activo.");
+            setStatus('Marcador detectado. Robot <b>XimosAI</b> activo.');
           }
         });
-        marker.addEventListener("markerLost", function () {
-          setStatus("Marcador perdido. Vuelve a apuntar al marcador.");
+        marker.addEventListener('markerLost', function () {
+          setStatus('Marcador perdido. Vuelve a apuntar al marcador.');
         });
       }
     });
   </script>
 </head>
 <body>
-  <div id="panel">
-    <strong>XimosAI · Robot AR</strong>
-    1. Pulsa <b>Activar audio</b>.<br>
-    2. Apunta la cámara al marcador.
-    <div class="botones">
-      <button onclick="activarAudio()">Activar audio</button>
-      <button onclick="repetirMensaje()">Repetir mensaje</button>
-      <a class="boton secundario" href="marcador.html" target="_blank">Ver marcador</a>
+  <div id="hud">
+    <div class="title"><span class="brand1">XimosAI</span> <span class="dot">•</span> <span class="brand2">Robot AR</span></div>
+    <div class="steps">
+      1. Pulsa <b>Activar audio</b>.<br>
+      2. Apunta la cámara al marcador.
     </div>
-    <div id="status">Esperando permiso de cámara y marcador...</div>
+    <div class="buttons">
+      <button class="btn btn-audio" onclick="activarAudio()">🔊 Activar audio</button>
+      <button class="btn btn-repeat" onclick="repetirMensaje()">🔄 Repetir mensaje</button>
+      <a class="btn btn-marker" href="marcador.html" target="_blank">🧾 Ver marcador</a>
+    </div>
+    <div class="status"><span class="status-dot"></span><span id="statusText">Esperando permiso de cámara y marcador...</span></div>
   </div>
 
-  <div id="ayuda">El robot aparece justo encima del marcador</div>
+  <div id="bubble">
+    <div class="voiceIcon">🔊</div>
+    <p id="speechText">
+      Hola, soy el asistente virtual de <span class="accent1">XimosAI</span>.<br>
+      La inteligencia artificial ya no es cosa del futuro.<br>
+      Puede ayudarte a crear contenido, mejorar tu trabajo, organizar tu empresa y ahorrar tiempo.<br>
+      Escanea, descubre y empieza a usar la inteligencia artificial de forma <span class="accent2">práctica</span>.
+    </p>
+  </div>
 
   <a-scene
     embedded
-    renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true;"
+    renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true; colorManagement: true;"
     vr-mode-ui="enabled: false"
     arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
   >
+    <a-entity light="type: ambient; color: #ffffff; intensity: 1.1"></a-entity>
+    <a-entity light="type: directional; color: #ffffff; intensity: 0.85" position="1 3 2"></a-entity>
+    <a-entity light="type: directional; color: #a8f6ff; intensity: 0.55" position="-2 1 2"></a-entity>
+
     <a-marker preset="hiro" ximosai-robot-ar>
-      <a-entity position="0 0 0">
+      <a-entity position="0 0 0" rotation="-90 0 0" scale="0.92 0.92 0.92">
 
-        <a-cylinder position="0 0.02 0" radius="0.65" height="0.06" material="color: #07171b; metalness: 0.35; roughness: 0.35"></a-cylinder>
-        <a-torus position="0 0.06 0" radius="0.62" radius-tubular="0.03" material="color: #00eaff; emissive: #00eaff; emissiveIntensity: 0.9; transparent: true; opacity: 0.95" animation="property: rotation; to: 0 360 0; loop: true; dur: 5200; easing: linear"></a-torus>
-        <a-ring position="0 0.065 0" rotation="-90 0 0" radius-inner="0.38" radius-outer="0.45" material="color: #ffffff; emissive: #00ffff; emissiveIntensity: 0.35; transparent: true; opacity: 0.55"></a-ring>
-
-        <a-sphere position="0 0.95 0" radius="0.88" material="color: #00ffff; wireframe: true; transparent: true; opacity: 0.07" animation="property: rotation; to: 0 360 0; loop: true; dur: 11000; easing: linear"></a-sphere>
-
-        <a-entity id="robot" position="0 0.44 0" animation="property: position; dir: alternate; dur: 1800; loop: true; to: 0 0.52 0; easing: easeInOutSine">
-          <a-cylinder position="-0.13 -0.24 0" radius="0.045" height="0.26" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
-          <a-cylinder position="0.13 -0.24 0" radius="0.045" height="0.26" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
-          <a-sphere position="-0.13 -0.40 0.02" radius="0.08" scale="1.4 0.45 1" material="color: #ffffff; metalness: 0.25; roughness: 0.2"></a-sphere>
-          <a-sphere position="0.13 -0.40 0.02" radius="0.08" scale="1.4 0.45 1" material="color: #ffffff; metalness: 0.25; roughness: 0.2"></a-sphere>
-          <a-sphere position="0 0 0" radius="0.30" scale="1 1.18 0.78" material="color: #f7fbfc; metalness: 0.22; roughness: 0.18"></a-sphere>
-          <a-sphere position="0 0.03 0.19" radius="0.16" scale="1.7 0.7 0.22" material="color: #081418; metalness: 0.2; roughness: 0.22"></a-sphere>
-          <a-text value="XimosAI" position="-0.25 0.03 0.31" align="center" width="0.95" color="#00f0ff"></a-text>
-          <a-sphere position="0 0.50 0" radius="0.26" scale="1.12 0.94 0.86" material="color: #f7fbfc; metalness: 0.22; roughness: 0.18"></a-sphere>
-          <a-sphere position="0 0.51 0.18" radius="0.20" scale="1.25 0.72 0.18" material="color: #071114; metalness: 0.2; roughness: 0.18"></a-sphere>
-          <a-sphere position="-0.07 0.54 0.29" radius="0.025" scale="0.75 1.35 0.3" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 2.5" animation="property: scale; dir: alternate; dur: 1100; loop: true; to: 0.75 0.7 0.3; easing: easeInOutSine"></a-sphere>
-          <a-sphere position="0.07 0.54 0.29" radius="0.025" scale="0.75 1.35 0.3" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 2.5" animation="property: scale; dir: alternate; dur: 1200; loop: true; to: 0.75 0.7 0.3; easing: easeInOutSine"></a-sphere>
-          <a-torus position="0 0.46 0.295" radius="0.06" radius-tubular="0.005" scale="1 0.5 0.18" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 1.6; transparent: true; opacity: 0.98"></a-torus>
-          <a-cylinder position="0 0.78 0" radius="0.012" height="0.12" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 1.2"></a-cylinder>
-          <a-sphere position="0 0.87 0" radius="0.038" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 2.1" animation="property: scale; dir: alternate; dur: 850; loop: true; to: 1.2 1.2 1.2; easing: easeInOutSine"></a-sphere>
-          <a-sphere position="-0.28 0.51 0" radius="0.065" scale="0.55 1 1" material="color: #00dff5; metalness: 0.18; roughness: 0.18"></a-sphere>
-          <a-sphere position="0.28 0.51 0" radius="0.065" scale="0.55 1 1" material="color: #00dff5; metalness: 0.18; roughness: 0.18"></a-sphere>
-          <a-entity position="-0.30 0.10 0" rotation="0 0 20">
-            <a-cylinder position="0 -0.13 0" radius="0.04" height="0.30" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
-            <a-sphere position="0 -0.30 0" radius="0.055" material="color: #ffffff; metalness: 0.25; roughness: 0.18"></a-sphere>
-          </a-entity>
-          <a-entity position="0.29 0.16 0" rotation="0 0 -35" animation="property: rotation; dir: alternate; dur: 900; loop: true; to: 0 0 -72; easing: easeInOutSine">
-            <a-cylinder position="0 0.14 0" radius="0.04" height="0.31" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
-            <a-sphere position="0 0.32 0" radius="0.06" material="color: #ffffff; metalness: 0.25; roughness: 0.18"></a-sphere>
-          </a-entity>
+        <a-entity position="0 0.02 0">
+          <a-torus position="0 0 0" radius="0.64" radius-tubular="0.032" material="color: #19e7ff; emissive: #19e7ff; emissiveIntensity: 0.9; transparent: true; opacity: 0.96" animation="property: rotation; to: 0 0 360; loop: true; dur: 3800; easing: linear"></a-torus>
+          <a-torus position="0 0.02 0" radius="0.42" radius-tubular="0.015" material="color: #d2faff; emissive: #4deaff; emissiveIntensity: 0.45; transparent: true; opacity: 0.72" animation="property: rotation; to: 0 0 -360; loop: true; dur: 5200; easing: linear"></a-torus>
+          <a-cylinder position="0 -0.01 0" radius="0.66" height="0.06" material="color: #09141a; metalness: 0.4; roughness: 0.35; opacity: 0.9"></a-cylinder>
+          <a-ring position="0 0.03 0" rotation="90 0 0" radius-inner="0.30" radius-outer="0.38" material="color: #7b4eff; emissive: #7b4eff; emissiveIntensity: 0.6; transparent: true; opacity: 0.55"></a-ring>
         </a-entity>
 
-        <a-text value="XimosAI" position="-0.46 1.45 0" color="#00f0ff" width="2.2" align="center"></a-text>
-        <a-text value="IA practica para empresas y personas" position="-0.79 1.28 0" color="#ffffff" width="1.85" align="center"></a-text>
+        <a-entity id="robot" position="0 0.50 0" animation="property: position; dir: alternate; dur: 1700; loop: true; to: 0 0.57 0; easing: easeInOutSine">
+
+          <a-cylinder position="-0.12 -0.27 0" radius="0.045" height="0.25" material="color: #edf7fb; metalness: 0.3; roughness: 0.18"></a-cylinder>
+          <a-cylinder position="0.12 -0.27 0" radius="0.045" height="0.25" material="color: #edf7fb; metalness: 0.3; roughness: 0.18"></a-cylinder>
+          <a-sphere position="-0.12 -0.42 0.03" radius="0.08" scale="1.3 0.45 1.0" material="color: #ffffff; metalness: 0.25; roughness: 0.15"></a-sphere>
+          <a-sphere position="0.12 -0.42 0.03" radius="0.08" scale="1.3 0.45 1.0" material="color: #ffffff; metalness: 0.25; roughness: 0.15"></a-sphere>
+
+          <a-sphere position="0 0 0" radius="0.31" scale="1.0 1.15 0.82" material="color: #ffffff; metalness: 0.22; roughness: 0.16"></a-sphere>
+          <a-sphere position="0 0.01 0.22" radius="0.17" scale="1.7 0.75 0.25" material="color: #13202b; metalness: 0.12; roughness: 0.18"></a-sphere>
+          <a-circle position="0 0.04 0.305" radius="0.09" material="color: #10d4ff; emissive: #10d4ff; emissiveIntensity: 0.9"></a-circle>
+          <a-text value="X" position="-0.055 0.00 0.316" width="0.35" color="#092233" align="center"></a-text>
+          <a-text value="XimosAI" position="-0.21 -0.12 0.31" width="0.95" color="#ffffff" align="center"></a-text>
+
+          <a-sphere position="0 0.53 0" radius="0.29" scale="1.15 0.90 0.92" material="color: #fbfdff; metalness: 0.2; roughness: 0.14"></a-sphere>
+          <a-sphere position="0 0.54 0.19" radius="0.22" scale="1.28 0.76 0.18" material="color: #071523; metalness: 0.1; roughness: 0.12"></a-sphere>
+
+          <a-sphere position="-0.085 0.57 0.31" radius="0.028" scale="1.0 1.0 0.35" material="color: #19e7ff; emissive: #19e7ff; emissiveIntensity: 2.0"></a-sphere>
+          <a-sphere position="0.085 0.57 0.31" radius="0.028" scale="1.0 1.0 0.35" material="color: #19e7ff; emissive: #19e7ff; emissiveIntensity: 2.0"></a-sphere>
+          <a-sphere position="-0.06 0.60 0.31" radius="0.014" scale="1 0.4 0.35" material="color: #0a2340"></a-sphere>
+          <a-sphere position="0.06 0.60 0.31" radius="0.014" scale="1 0.4 0.35" material="color: #0a2340"></a-sphere>
+          <a-torus position="0 0.495 0.315" radius="0.065" radius-tubular="0.0055" scale="1 0.50 0.18" material="color: #ff56b1; emissive: #ff56b1; emissiveIntensity: 0.7; transparent: true; opacity: 0.98"></a-torus>
+
+          <a-sphere position="-0.29 0.54 0" radius="0.07" scale="0.60 1.0 1.0" material="color: #23d4ff; metalness: 0.2; roughness: 0.16"></a-sphere>
+          <a-sphere position="0.29 0.54 0" radius="0.07" scale="0.60 1.0 1.0" material="color: #23d4ff; metalness: 0.2; roughness: 0.16"></a-sphere>
+          <a-cylinder position="0 0.83 0" radius="0.012" height="0.12" material="color: #24d8ff; emissive: #24d8ff; emissiveIntensity: 1.1"></a-cylinder>
+          <a-sphere position="0 0.92 0" radius="0.04" material="color: #24d8ff; emissive: #24d8ff; emissiveIntensity: 1.8" animation="property: scale; dir: alternate; dur: 850; loop: true; to: 1.18 1.18 1.18; easing: easeInOutSine"></a-sphere>
+
+          <a-entity position="-0.30 0.10 0" rotation="0 0 15">
+            <a-cylinder position="0 -0.12 0" radius="0.04" height="0.30" material="color: #edf7fb; metalness: 0.3; roughness: 0.18"></a-cylinder>
+            <a-sphere position="0 -0.29 0" radius="0.055" material="color: #ffffff; metalness: 0.25; roughness: 0.15"></a-sphere>
+          </a-entity>
+
+          <a-entity position="0.30 0.16 0" rotation="0 0 -32" animation="property: rotation; dir: alternate; dur: 880; loop: true; to: 0 0 -68; easing: easeInOutSine">
+            <a-cylinder position="0 0.14 0" radius="0.04" height="0.31" material="color: #edf7fb; metalness: 0.3; roughness: 0.18"></a-cylinder>
+            <a-sphere position="0 0.31 0" radius="0.058" material="color: #ffffff; metalness: 0.25; roughness: 0.15"></a-sphere>
+          </a-entity>
+
+          <a-sphere position="0 0.20 0" radius="0.84" material="color: #13ddff; wireframe: true; transparent: true; opacity: 0.06" animation="property: rotation; to: 0 360 0; loop: true; dur: 9400; easing: linear"></a-sphere>
+        </a-entity>
+
+        <a-text value="XimosAI" position="-0.42 1.45 0" width="2.1" color="#19e7ff" align="center"></a-text>
+        <a-text value="IA practica para empresas y personas" position="-0.77 1.28 0" width="1.75" color="#ffffff" align="center"></a-text>
 
       </a-entity>
     </a-marker>
-
     <a-entity camera></a-entity>
   </a-scene>
 </body>

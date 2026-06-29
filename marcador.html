@@ -7,60 +7,48 @@
   <style>
     body {
       margin: 0;
-      padding: 20px;
-      background: #ebf0f2;
+      padding: 18px;
+      background: #edf2f5;
       font-family: Arial, Helvetica, sans-serif;
-      color: #0e1113;
+      color: #10161d;
       text-align: center;
     }
     .card {
       max-width: 760px;
       margin: auto;
-      background: #fff;
+      background: white;
       border-radius: 24px;
       padding: 24px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.14);
+      box-shadow: 0 14px 38px rgba(0,0,0,0.14);
     }
-    h1 {
-      margin: 0 0 10px;
-      font-size: 42px;
-    }
-    .brand {
-      color: #00b8d4;
-      font-weight: 800;
-    }
+    h1 { margin: 4px 0 10px; font-size: 40px; }
+    .brand { color: #19cfff; font-weight: 800; }
     .note {
+      max-width: 640px;
+      margin: 0 auto 18px;
       font-size: 18px;
       line-height: 1.45;
-      color: #334048;
-      max-width: 630px;
-      margin: 0 auto 18px;
+      color: #33424e;
     }
-    .wrap {
+    .markerWrap {
       margin: 18px auto;
-      width: min(88vw, 500px);
-      border-radius: 18px;
+      width: min(88vw, 520px);
       padding: 18px;
-      background: #051014;
-      border: 4px solid #00e5ff;
-      box-shadow: 0 0 28px rgba(0,229,255,0.3);
+      border-radius: 20px;
+      background: linear-gradient(145deg, #061119, #11192b);
+      border: 4px solid #19dfff;
+      box-shadow: 0 0 28px rgba(25, 223, 255, 0.28);
     }
-    img {
-      width: 100%;
-      display: block;
-      background: white;
-    }
+    img { width: 100%; display: block; background: #fff; }
     .footer {
-      margin-top: 16px;
-      background: #071418;
-      color: white;
-      border-radius: 14px;
+      margin-top: 14px;
       padding: 14px;
+      border-radius: 16px;
+      background: #071522;
+      color: white;
       font-size: 18px;
     }
-    .footer strong {
-      color: #00f0ff;
-    }
+    .footer strong { color: #19e7ff; }
   </style>
 </head>
 <body>
@@ -70,12 +58,10 @@
       Abre la web del robot en otro móvil, acepta la cámara y apunta a este marcador.
       Debe verse entero, con buena luz y sin reflejos.
     </p>
-    <div class="wrap">
+    <div class="markerWrap">
       <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" alt="Marcador Hiro para AR.js" />
     </div>
-    <div class="footer">
-      Marcador de prueba para activar el robot de <strong>XimosAI</strong>
-    </div>
+    <div class="footer">Marcador de prueba para activar el robot de <strong>XimosAI</strong></div>
   </div>
 </body>
 </html>
