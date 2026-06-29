@@ -4,78 +4,105 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>XimosAI · Robot AR</title>
-
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-
   <style>
     html, body {
       margin: 0;
-      padding: 0;
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #000;
       font-family: Arial, Helvetica, sans-serif;
+      background: transparent !important;
     }
-
+    body { position: fixed; inset: 0; }
+    video {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      z-index: -2 !important;
+      background: #000 !important;
+    }
+    canvas {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: -1 !important;
+    }
+    a-scene {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: transparent !important;
+    }
     #panel {
       position: fixed;
       top: 12px;
       left: 12px;
       right: 12px;
-      z-index: 9999;
-      background: rgba(0, 0, 0, 0.76);
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.58);
       color: #fff;
       padding: 12px;
-      border-radius: 15px;
-      border: 1px solid rgba(0, 255, 255, 0.55);
-      box-shadow: 0 0 24px rgba(0, 255, 255, 0.28);
+      border-radius: 18px;
+      border: 1px solid rgba(0, 255, 255, 0.45);
+      box-shadow: 0 0 24px rgba(0, 255, 255, 0.22);
+      backdrop-filter: blur(5px);
       font-size: 14px;
       line-height: 1.35;
-      backdrop-filter: blur(4px);
     }
-
     #panel strong {
-      color: #00ffff;
-      font-size: 16px;
+      display: block;
+      font-size: 18px;
+      color: #00f0ff;
+      margin-bottom: 6px;
     }
-
     .botones {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 9px;
+      margin-top: 10px;
+      margin-bottom: 8px;
     }
-
     button, a.boton {
-      padding: 10px 12px;
       border: none;
-      border-radius: 11px;
-      background: #00e5ff;
+      border-radius: 12px;
+      padding: 10px 14px;
+      background: #00ddff;
       color: #001014;
+      font-size: 14px;
       font-weight: 700;
       text-decoration: none;
       cursor: pointer;
-      font-size: 13px;
     }
-
     a.boton.secundario {
-      background: #ffffff;
+      background: rgba(255,255,255,0.92);
       color: #001014;
     }
-
     #status {
-      margin-top: 8px;
-      color: #b8ffff;
+      color: #ccfbff;
       font-size: 13px;
     }
+    #ayuda {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(0,0,0,0.45);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(4px);
+    }
   </style>
-
   <script>
     let audioReady = false;
     let lastSpeakTime = 0;
-
     const mensajePublicidad = `
       Hola, soy el asistente virtual de XimosAI.
       La inteligencia artificial ya no es cosa del futuro.
@@ -83,48 +110,38 @@
       organizar tu empresa y ahorrar tiempo.
       Escanea, descubre y empieza a usar la inteligencia artificial de forma práctica.
     `;
-
     function setStatus(texto) {
-      const status = document.getElementById("status");
-      if (status) status.innerText = texto;
+      const s = document.getElementById("status");
+      if (s) s.innerText = texto;
     }
-
     function hablar(texto) {
       if (!("speechSynthesis" in window)) {
-        setStatus("Este navegador no soporta voz automática.");
+        setStatus("Tu navegador no soporta voz automática.");
         return;
       }
-
       window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(texto);
-      utterance.lang = "es-ES";
-      utterance.rate = 0.95;
-      utterance.pitch = 1.08;
-      utterance.volume = 1;
-
-      window.speechSynthesis.speak(utterance);
+      const u = new SpeechSynthesisUtterance(texto);
+      u.lang = "es-ES";
+      u.rate = 0.96;
+      u.pitch = 1.02;
+      u.volume = 1;
+      window.speechSynthesis.speak(u);
     }
-
     function activarAudio() {
       audioReady = true;
-      hablar("Audio activado. Apunta la cámara al marcador para ver al robot de XimosAI.");
+      hablar("Audio activado. Apunta la cámara al marcador para ver a XimosAI.");
       setStatus("Audio activado. Apunta al marcador.");
     }
-
     function repetirMensaje() {
       audioReady = true;
       hablar(mensajePublicidad);
-      setStatus("Mensaje reproducido. Mantén el marcador enfocado.");
+      setStatus("Mensaje reproducido.");
     }
-
-    AFRAME.registerComponent("robot-ximosai-parlante", {
+    AFRAME.registerComponent("ximosai-robot-ar", {
       init: function () {
-        const marcador = this.el;
-
-        marcador.addEventListener("markerFound", function () {
+        const marker = this.el;
+        marker.addEventListener("markerFound", function () {
           const ahora = Date.now();
-
           if (audioReady && ahora - lastSpeakTime > 18000) {
             lastSpeakTime = ahora;
             hablar(mensajePublicidad);
@@ -135,18 +152,16 @@
             setStatus("Marcador detectado. Robot XimosAI activo.");
           }
         });
-
-        marcador.addEventListener("markerLost", function () {
-          setStatus("Marcador perdido. Vuelve a enfocar el marcador completo.");
+        marker.addEventListener("markerLost", function () {
+          setStatus("Marcador perdido. Vuelve a apuntar al marcador.");
         });
       }
     });
   </script>
 </head>
-
 <body>
   <div id="panel">
-    <strong>XimosAI · Robot AR</strong><br>
+    <strong>XimosAI · Robot AR</strong>
     1. Pulsa <b>Activar audio</b>.<br>
     2. Apunta la cámara al marcador.
     <div class="botones">
@@ -157,223 +172,52 @@
     <div id="status">Esperando permiso de cámara y marcador...</div>
   </div>
 
+  <div id="ayuda">El robot aparece justo encima del marcador</div>
+
   <a-scene
     embedded
+    renderer="alpha: true; antialias: true; logarithmicDepthBuffer: true;"
     vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true;"
-    arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;"
   >
+    <a-marker preset="hiro" ximosai-robot-ar>
+      <a-entity position="0 0 0">
 
-    <a-marker preset="hiro" robot-ximosai-parlante>
-      <a-entity position="0 0 0" rotation="-90 0 0" scale="0.92 0.92 0.92">
+        <a-cylinder position="0 0.02 0" radius="0.65" height="0.06" material="color: #07171b; metalness: 0.35; roughness: 0.35"></a-cylinder>
+        <a-torus position="0 0.06 0" radius="0.62" radius-tubular="0.03" material="color: #00eaff; emissive: #00eaff; emissiveIntensity: 0.9; transparent: true; opacity: 0.95" animation="property: rotation; to: 0 360 0; loop: true; dur: 5200; easing: linear"></a-torus>
+        <a-ring position="0 0.065 0" rotation="-90 0 0" radius-inner="0.38" radius-outer="0.45" material="color: #ffffff; emissive: #00ffff; emissiveIntensity: 0.35; transparent: true; opacity: 0.55"></a-ring>
 
-        <a-entity position="0 0.03 0">
-          <a-torus
-            radius="0.72"
-            radius-tubular="0.025"
-            material="color: #00ffff; emissive: #00ffff; emissiveIntensity: 0.8; transparent: true; opacity: 0.9"
-            animation="property: rotation; to: 0 0 360; loop: true; dur: 3600; easing: linear"
-          ></a-torus>
+        <a-sphere position="0 0.95 0" radius="0.88" material="color: #00ffff; wireframe: true; transparent: true; opacity: 0.07" animation="property: rotation; to: 0 360 0; loop: true; dur: 11000; easing: linear"></a-sphere>
 
-          <a-torus
-            radius="0.46"
-            radius-tubular="0.012"
-            material="color: #ffffff; emissive: #00ffff; emissiveIntensity: 0.5; transparent: true; opacity: 0.75"
-            animation="property: rotation; to: 0 0 -360; loop: true; dur: 5000; easing: linear"
-          ></a-torus>
-
-          <a-cylinder
-            radius="0.72"
-            height="0.025"
-            material="color: #00181c; transparent: true; opacity: 0.75"
-          ></a-cylinder>
-        </a-entity>
-
-        <a-entity
-          id="robot"
-          position="0 0.48 0"
-          animation="property: position; dir: alternate; dur: 1600; loop: true; to: 0 0.56 0; easing: easeInOutSine"
-        >
-
-          <a-cylinder
-            position="-0.15 -0.26 0"
-            radius="0.055"
-            height="0.26"
-            material="color: #d9e3e7; metalness: 0.4; roughness: 0.25"
-          ></a-cylinder>
-
-          <a-cylinder
-            position="0.15 -0.26 0"
-            radius="0.055"
-            height="0.26"
-            material="color: #d9e3e7; metalness: 0.4; roughness: 0.25"
-          ></a-cylinder>
-
-          <a-sphere
-            position="-0.15 -0.42 0.02"
-            radius="0.085"
-            scale="1.25 0.45 0.9"
-            material="color: #ffffff; metalness: 0.35; roughness: 0.25"
-          ></a-sphere>
-
-          <a-sphere
-            position="0.15 -0.42 0.02"
-            radius="0.085"
-            scale="1.25 0.45 0.9"
-            material="color: #ffffff; metalness: 0.35; roughness: 0.25"
-          ></a-sphere>
-
-          <a-sphere
-            position="0 0.02 0"
-            radius="0.32"
-            scale="0.95 1.12 0.72"
-            material="color: #ffffff; metalness: 0.25; roughness: 0.18"
-          ></a-sphere>
-
-          <a-sphere
-            position="0 0.05 -0.235"
-            radius="0.18"
-            scale="1.35 0.55 0.12"
-            material="color: #081316; metalness: 0.3; roughness: 0.22"
-          ></a-sphere>
-
-          <a-text
-            value="XimosAI"
-            position="-0.225 0.04 -0.34"
-            rotation="0 0 0"
-            color="#00ffff"
-            width="0.95"
-            align="center"
-            material="transparent: true; opacity: 1"
-          ></a-text>
-
-          <a-sphere
-            position="0 0.55 0"
-            radius="0.29"
-            scale="1.08 0.9 0.78"
-            material="color: #f3f8fa; metalness: 0.28; roughness: 0.16"
-          ></a-sphere>
-
-          <a-sphere
-            position="0 0.56 -0.215"
-            radius="0.22"
-            scale="1.15 0.62 0.12"
-            material="color: #061014; metalness: 0.15; roughness: 0.2"
-          ></a-sphere>
-
-          <a-sphere
-            position="-0.075 0.59 -0.305"
-            radius="0.026"
-            scale="0.75 1.35 0.28"
-            material="color: #00ffff; emissive: #00ffff; emissiveIntensity: 2.2"
-            animation="property: scale; dir: alternate; dur: 900; loop: true; to: 0.75 0.8 0.28; easing: easeInOutSine"
-          ></a-sphere>
-
-          <a-sphere
-            position="0.075 0.59 -0.305"
-            radius="0.026"
-            scale="0.75 1.35 0.28"
-            material="color: #00ffff; emissive: #00ffff; emissiveIntensity: 2.2"
-            animation="property: scale; dir: alternate; dur: 950; loop: true; to: 0.75 0.8 0.28; easing: easeInOutSine"
-          ></a-sphere>
-
-          <a-torus
-            position="0 0.50 -0.306"
-            radius="0.065"
-            radius-tubular="0.006"
-            rotation="0 0 0"
-            scale="1 0.45 0.12"
-            material="color: #00ffff; emissive: #00ffff; emissiveIntensity: 1.6; transparent: true; opacity: 0.95"
-          ></a-torus>
-
-          <a-cylinder
-            position="0 0.83 0"
-            radius="0.012"
-            height="0.15"
-            material="color: #00ffff; emissive: #00ffff; emissiveIntensity: 1.3"
-          ></a-cylinder>
-
-          <a-sphere
-            position="0 0.93 0"
-            radius="0.04"
-            material="color: #00ffff; emissive: #00ffff; emissiveIntensity: 2"
-            animation="property: scale; dir: alternate; dur: 900; loop: true; to: 1.22 1.22 1.22; easing: easeInOutSine"
-          ></a-sphere>
-
-          <a-sphere
-            position="-0.31 0.56 0"
-            radius="0.08"
-            scale="0.55 1 1"
-            material="color: #00ffff; metalness: 0.25; roughness: 0.2"
-          ></a-sphere>
-
-          <a-sphere
-            position="0.31 0.56 0"
-            radius="0.08"
-            scale="0.55 1 1"
-            material="color: #00ffff; metalness: 0.25; roughness: 0.2"
-          ></a-sphere>
-
-          <a-entity position="-0.31 0.12 0" rotation="0 0 18">
-            <a-cylinder
-              position="0 -0.13 0"
-              radius="0.045"
-              height="0.31"
-              material="color: #d9e3e7; metalness: 0.35; roughness: 0.22"
-            ></a-cylinder>
-            <a-sphere
-              position="0 -0.31 0"
-              radius="0.06"
-              material="color: #ffffff; metalness: 0.35; roughness: 0.22"
-            ></a-sphere>
+        <a-entity id="robot" position="0 0.44 0" animation="property: position; dir: alternate; dur: 1800; loop: true; to: 0 0.52 0; easing: easeInOutSine">
+          <a-cylinder position="-0.13 -0.24 0" radius="0.045" height="0.26" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
+          <a-cylinder position="0.13 -0.24 0" radius="0.045" height="0.26" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
+          <a-sphere position="-0.13 -0.40 0.02" radius="0.08" scale="1.4 0.45 1" material="color: #ffffff; metalness: 0.25; roughness: 0.2"></a-sphere>
+          <a-sphere position="0.13 -0.40 0.02" radius="0.08" scale="1.4 0.45 1" material="color: #ffffff; metalness: 0.25; roughness: 0.2"></a-sphere>
+          <a-sphere position="0 0 0" radius="0.30" scale="1 1.18 0.78" material="color: #f7fbfc; metalness: 0.22; roughness: 0.18"></a-sphere>
+          <a-sphere position="0 0.03 0.19" radius="0.16" scale="1.7 0.7 0.22" material="color: #081418; metalness: 0.2; roughness: 0.22"></a-sphere>
+          <a-text value="XimosAI" position="-0.25 0.03 0.31" align="center" width="0.95" color="#00f0ff"></a-text>
+          <a-sphere position="0 0.50 0" radius="0.26" scale="1.12 0.94 0.86" material="color: #f7fbfc; metalness: 0.22; roughness: 0.18"></a-sphere>
+          <a-sphere position="0 0.51 0.18" radius="0.20" scale="1.25 0.72 0.18" material="color: #071114; metalness: 0.2; roughness: 0.18"></a-sphere>
+          <a-sphere position="-0.07 0.54 0.29" radius="0.025" scale="0.75 1.35 0.3" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 2.5" animation="property: scale; dir: alternate; dur: 1100; loop: true; to: 0.75 0.7 0.3; easing: easeInOutSine"></a-sphere>
+          <a-sphere position="0.07 0.54 0.29" radius="0.025" scale="0.75 1.35 0.3" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 2.5" animation="property: scale; dir: alternate; dur: 1200; loop: true; to: 0.75 0.7 0.3; easing: easeInOutSine"></a-sphere>
+          <a-torus position="0 0.46 0.295" radius="0.06" radius-tubular="0.005" scale="1 0.5 0.18" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 1.6; transparent: true; opacity: 0.98"></a-torus>
+          <a-cylinder position="0 0.78 0" radius="0.012" height="0.12" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 1.2"></a-cylinder>
+          <a-sphere position="0 0.87 0" radius="0.038" material="color: #00f0ff; emissive: #00f0ff; emissiveIntensity: 2.1" animation="property: scale; dir: alternate; dur: 850; loop: true; to: 1.2 1.2 1.2; easing: easeInOutSine"></a-sphere>
+          <a-sphere position="-0.28 0.51 0" radius="0.065" scale="0.55 1 1" material="color: #00dff5; metalness: 0.18; roughness: 0.18"></a-sphere>
+          <a-sphere position="0.28 0.51 0" radius="0.065" scale="0.55 1 1" material="color: #00dff5; metalness: 0.18; roughness: 0.18"></a-sphere>
+          <a-entity position="-0.30 0.10 0" rotation="0 0 20">
+            <a-cylinder position="0 -0.13 0" radius="0.04" height="0.30" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
+            <a-sphere position="0 -0.30 0" radius="0.055" material="color: #ffffff; metalness: 0.25; roughness: 0.18"></a-sphere>
           </a-entity>
-
-          <a-entity
-            position="0.31 0.18 0"
-            rotation="0 0 -38"
-            animation="property: rotation; dir: alternate; dur: 850; loop: true; to: 0 0 -75; easing: easeInOutSine"
-          >
-            <a-cylinder
-              position="0 0.16 0"
-              radius="0.042"
-              height="0.34"
-              material="color: #d9e3e7; metalness: 0.35; roughness: 0.22"
-            ></a-cylinder>
-            <a-sphere
-              position="0 0.36 0"
-              radius="0.065"
-              material="color: #ffffff; metalness: 0.35; roughness: 0.22"
-            ></a-sphere>
+          <a-entity position="0.29 0.16 0" rotation="0 0 -35" animation="property: rotation; dir: alternate; dur: 900; loop: true; to: 0 0 -72; easing: easeInOutSine">
+            <a-cylinder position="0 0.14 0" radius="0.04" height="0.31" material="color: #d9e4e8; metalness: 0.35; roughness: 0.25"></a-cylinder>
+            <a-sphere position="0 0.32 0" radius="0.06" material="color: #ffffff; metalness: 0.25; roughness: 0.18"></a-sphere>
           </a-entity>
-
-          <a-sphere
-            position="0 0.18 0"
-            radius="0.82"
-            material="color: #00ffff; transparent: true; opacity: 0.075; wireframe: true"
-            animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear"
-          ></a-sphere>
-
         </a-entity>
 
-        <a-entity position="0 1.55 0">
-          <a-text
-            value="XimosAI"
-            position="-0.43 0 0"
-            align="center"
-            color="#00ffff"
-            width="2.15"
-            material="transparent: true; opacity: 0.98"
-          ></a-text>
-
-          <a-text
-            value="IA practica para empresas y personas"
-            position="-0.75 -0.16 0"
-            align="center"
-            color="#ffffff"
-            width="1.75"
-            material="transparent: true; opacity: 0.9"
-          ></a-text>
-        </a-entity>
+        <a-text value="XimosAI" position="-0.46 1.45 0" color="#00f0ff" width="2.2" align="center"></a-text>
+        <a-text value="IA practica para empresas y personas" position="-0.79 1.28 0" color="#ffffff" width="1.85" align="center"></a-text>
 
       </a-entity>
     </a-marker>
